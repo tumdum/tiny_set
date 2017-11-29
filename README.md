@@ -1,1 +1,55 @@
 Maybe smaller than std::set - https://github.com/tumdum/tiny_set
+
+```
+$ ./bench.sh
+1 TINY
+Using tiny::set
+real 6.64
+user 6.64
+sys 0.00
+1 STD
+Using std::set
+real 8.53
+user 8.52
+sys 0.00
+3 TINY
+Using tiny::set
+real 5.72
+user 5.72
+sys 0.00
+3 STD
+Using std::set
+real 8.98
+user 8.98
+sys 0.00
+5 TINY
+Using tiny::set
+real 5.70
+user 5.70
+sys 0.00
+5 STD
+Using std::set
+real 9.23
+user 9.22
+sys 0.00
+7 TINY
+Using tiny::set
+real 5.79
+user 5.79
+sys 0.00
+7 STD
+Using std::set
+real 10.64
+user 10.63
+sys 0.00
+9 TINY
+Using tiny::set
+real 9.44
+user 9.44
+sys 0.00
+9 STD
+Using std::set
+real 12.91
+user 12.91
+sys 0.00
+```
