@@ -61,6 +61,7 @@ void random_same_op(std::set<std::string>& a, tiny::set<std::string>& b)
 
 int main()
 {
+#if not defined(BENCHMARK_TINY) and not defined(BENCHMARK_STD)
     std::cerr << sizeof(tiny::array_set<Foo, 4>) << std::endl;
     std::cerr << "tiny size: " << tiny::set<Foo>::S << std::endl;
     std::cerr << sizeof(Foo) << std::endl;
@@ -192,4 +193,76 @@ int main()
             random_same_op(a, b);
         }
     }
+
+#else
+
+    
+#if defined(BENCHMARK_TINY)
+    std::cout << "Using tiny::set" << std::endl;
+    tiny::set<Foo> tfoos, tfoos2;
+#elif defined(BENCHMARK_STD)
+    std::cout << "Using std::set" << std::endl;
+    std::set<Foo> tfoos, tfoos2;
+#endif
+    tfoos.emplace(uint16_t(1),uint8_t(2));
+    tfoos.emplace(uint16_t(3),uint8_t(4));
+    tfoos.emplace(uint16_t(5),uint8_t(6));
+    tfoos.emplace(uint16_t(7),uint8_t(8));
+
+    tfoos2.emplace(uint16_t(7),uint8_t(8));
+    tfoos2.emplace(uint16_t(5),uint8_t(6));
+    tfoos2.emplace(uint16_t(3),uint8_t(4));
+    tfoos2.emplace(uint16_t(9),uint8_t(2));
+
+    const Foo needle{uint16_t(BENCHMARK_WHICH), uint8_t(8)};
+
+    volatile bool ret = false;
+
+    for (uint64_t i = 0; i != BENCHMARK_MAX; ++i)
+    {
+#if defined(BENCHMARK_TINY)
+ret =       tfoos.contains(needle);
+ret =       tfoos2.contains(needle);
+ret =       tfoos.contains(needle);
+ret =       tfoos2.contains(needle);
+ret =       tfoos.contains(needle);
+ret =       tfoos2.contains(needle);
+ret =       tfoos.contains(needle);
+ret =       tfoos2.contains(needle);
+ret =       tfoos.contains(needle);
+ret =       tfoos2.contains(needle);
+ret =       tfoos.contains(needle);
+ret =       tfoos2.contains(needle);
+ret =       tfoos.contains(needle);
+ret =       tfoos2.contains(needle);
+ret =       tfoos.contains(needle);
+ret =       tfoos2.contains(needle);
+ret =       tfoos.contains(needle);
+ret =       tfoos2.contains(needle);
+ret =       tfoos.contains(needle);
+#elif defined(BENCHMARK_STD)
+ret =       tfoos.find(needle) != tfoos.end();
+ret =       tfoos2.find(needle) != tfoos2.end();
+ret =       tfoos.find(needle) != tfoos.end();
+ret =       tfoos2.find(needle) != tfoos2.end();
+ret =       tfoos.find(needle) != tfoos.end();
+ret =       tfoos2.find(needle) != tfoos2.end();
+ret =       tfoos.find(needle) != tfoos.end();
+ret =       tfoos2.find(needle) != tfoos2.end();
+ret =       tfoos.find(needle) != tfoos.end();
+ret =       tfoos2.find(needle) != tfoos2.end();
+ret =       tfoos.find(needle) != tfoos.end();
+ret =       tfoos2.find(needle) != tfoos2.end();
+ret =       tfoos.find(needle) != tfoos.end();
+ret =       tfoos2.find(needle) != tfoos2.end();
+ret =       tfoos.find(needle) != tfoos.end();
+ret =       tfoos2.find(needle) != tfoos2.end();
+ret =       tfoos.find(needle) != tfoos.end();
+ret =       tfoos2.find(needle) != tfoos2.end();
+ret =       tfoos.find(needle) != tfoos.end();
+#endif
+    (void) ret;
+    }
+
+#endif
 }
