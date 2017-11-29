@@ -124,13 +124,12 @@ struct set
 
                 auto set = std::unique_ptr<std::set<T>>(new std::set<T>);
                 set->insert(m_data.tiny.begin(), m_data.tiny.end());
-                for (int i = 0; i != m_size; ++i)
-                { 
-                    m_data.tiny[i].~T();
-                }
                 const auto ret = set->emplace(std::move(tmp)).second;
+
+                m_data.tiny.std::array<T, S>::~array();
                 new (&m_data.full) std::unique_ptr<std::set<T>>();
                 m_data.full = std::move(set);
+
                 m_size = -1;
                 return ret;
             }
