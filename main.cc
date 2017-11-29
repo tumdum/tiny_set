@@ -1,5 +1,5 @@
 #include <iostream>
-#include "tiny_set.hpp"
+#include "tiny.hpp"
 
 struct Foo
 {
@@ -22,7 +22,7 @@ bool operator < (const Foo& lhs, const Foo& rhs)
 
 static_assert(sizeof(std::set<Foo>) == 48, "");
 static_assert(sizeof(std::unique_ptr<std::set<Foo>>) == sizeof(std::set<Foo>*), "");
-static_assert(sizeof(tiny_set<Foo>)*2 == sizeof(std::set<Foo>), "");
+static_assert(sizeof(tiny::set<Foo>)*2 == sizeof(std::set<Foo>), "");
 
 std::string random_string(int modulo = 10)
 {
@@ -30,15 +30,18 @@ std::string random_string(int modulo = 10)
     return prefix + std::to_string(rand() % modulo);
 }
 
-void random_same_op(std::set<std::string>& a, tiny_set<std::string>& b)
+void random_same_op(std::set<std::string>& a, tiny::set<std::string>& b)
 {
     assert(a.size() == b.size());
+    assert(a == b.to_std_set());
     switch (rand() % 3)
     {
         case 0:
             {
                 const auto new_string = random_string();
-                a.emplace(new_string); b.emplace(new_string);
+                const auto aok = a.emplace(new_string).second; 
+                const auto bok = b.emplace(new_string);
+                assert(aok == bok);
             }
         case 1:
             {
@@ -53,16 +56,17 @@ void random_same_op(std::set<std::string>& a, tiny_set<std::string>& b)
             }
     }
     assert(a.size() == b.size());
+    assert(a == b.to_std_set());
 }
 
 int main()
 {
-    std::cerr << sizeof(array_set<Foo, 4>) << std::endl;
-    std::cerr << "tiny size: " << tiny_set<Foo>::S << std::endl;
+    std::cerr << sizeof(tiny::array_set<Foo, 4>) << std::endl;
+    std::cerr << "tiny size: " << tiny::set<Foo>::S << std::endl;
     std::cerr << sizeof(Foo) << std::endl;
-    std::cerr << "tiny sizeof: " << sizeof(tiny_set<Foo>) << std::endl;
+    std::cerr << "tiny sizeof: " << sizeof(tiny::set<Foo>) << std::endl;
 
-    array_set<Foo, 4> foos;
+    tiny::array_set<Foo, 4> foos;
     assert(foos.emplace(uint16_t(1),uint8_t(2)));
     assert(!foos.emplace(uint16_t(1),uint8_t(2)));
     assert(foos.emplace(uint16_t(3),uint8_t(4)));
@@ -100,7 +104,7 @@ int main()
     assert(!foos.contains(Foo{7,8}));
     assert(foos.contains(Foo{9,10}));
 
-    array_set<std::string, 4> strings;
+    tiny::array_set<std::string, 4> strings;
     const std::string bar{"bar                                                                      "};
     strings.emplace("foo");
     strings.emplace(bar);
@@ -118,7 +122,7 @@ int main()
         std::cerr << s << std::endl;
     }
 
-    tiny_set<Foo> tfoos;
+    tiny::set<Foo> tfoos;
     assert(0 == tfoos.size());
     assert(tfoos.emplace(uint16_t(1),uint8_t(2)));
     assert(1 == tfoos.size());
@@ -133,7 +137,7 @@ int main()
     assert(tfoos.emplace(uint16_t(9),uint8_t(10)));
     assert(5 == tfoos.size());
 
-    tiny_set<std::string> tstrings;
+    tiny::set<std::string> tstrings;
     assert(tstrings.emplace(bar));
     assert(!tstrings.emplace(bar));
     assert(tstrings.emplace("1"));
@@ -179,12 +183,12 @@ int main()
     tstrings.erase("3");
     assert(!tstrings.contains("3"));
     
-    for (int a = 0; a != 100; ++a)
+    for (int a = 0; a != 1000; ++a)
     {
-        for (int i = 0; i != 50; ++i)
+        for (int i = 0; i != 100; ++i)
         {
             std::set<std::string> a;
-            tiny_set<std::string> b;
+            tiny::set<std::string> b;
             random_same_op(a, b);
         }
     }
