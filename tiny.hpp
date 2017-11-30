@@ -50,42 +50,6 @@ void erase(std::array<T, S>& data, TSize& size, const T& element)
     }
 }
 
-template <typename T, int S>
-struct array_set
-{
-    using iterator = T*;
-    using const_iterator = T const *;
-
-    template <typename... Args>
-    bool emplace(Args&&... args)
-    {
-        if (m_size == S) { return false; }
-        return tiny::emplace<T, S, decltype(m_size), Args...>(m_data, m_size, std::forward<Args>(args)...);
-    }
-
-    bool contains(const T& needle) const
-    {
-        return tiny::contains<T, S>(m_data, m_size, needle);
-    }
-
-    void erase(const T& element)
-    {
-        tiny::erase<T, S, decltype(m_size)>(m_data, m_size, element);
-    }
-
-    iterator begin() { return &m_data[0]; }
-
-    const_iterator begin() const { return &m_data[0]; }
-
-    iterator end() { return &m_data[m_size]; }
-
-    const_iterator end() const { return &m_data[m_size]; }
-
-private:
-    std::array<T, S> m_data;
-    uint8_t m_size = 0;
-};
-
 template <typename T>
 struct const_iterator : boost::iterator_facade<
                   const_iterator<T>, const T, boost::forward_traversal_tag>

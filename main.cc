@@ -76,66 +76,11 @@ void random_same_op(std::set<std::string>& a, tiny::set<std::string>& b)
 int main()
 {
 #if not defined(BENCHMARK_TINY) and not defined(BENCHMARK_STD)
-    std::cerr << sizeof(tiny::array_set<Foo, 4>) << std::endl;
     std::cerr << "tiny size: " << tiny::set<Foo>::S << std::endl;
     std::cerr << sizeof(Foo) << std::endl;
     std::cerr << "tiny sizeof: " << sizeof(tiny::set<Foo>) << std::endl;
 
-    tiny::array_set<Foo, 4> foos;
-    assert(foos.emplace(uint16_t(1),uint8_t(2)));
-    assert(!foos.emplace(uint16_t(1),uint8_t(2)));
-    assert(foos.emplace(uint16_t(3),uint8_t(4)));
-    assert(foos.emplace(uint16_t(5),uint8_t(6)));
-    assert(foos.emplace(uint16_t(7),uint8_t(8)));
-    assert(!foos.emplace(uint16_t(9),uint8_t(10)));
-
-    assert(foos.contains(Foo{1,2}));
-    assert(foos.contains(Foo{3,4}));
-    assert(foos.contains(Foo{5,6}));
-    assert(foos.contains(Foo{7,8}));
-    assert(!foos.contains(Foo{9,10}));
-
-    foos.erase(Foo{1, 2});
-
-    assert(!foos.contains(Foo{1,2}));
-    assert(foos.contains(Foo{3,4}));
-    assert(foos.contains(Foo{5,6}));
-    assert(foos.contains(Foo{7,8}));
-    assert(!foos.contains(Foo{9,10}));
-
-    foos.erase(Foo{7, 8});
-
-    assert(!foos.contains(Foo{1,2}));
-    assert(foos.contains(Foo{3,4}));
-    assert(foos.contains(Foo{5,6}));
-    assert(!foos.contains(Foo{7,8}));
-    assert(!foos.contains(Foo{9,10}));
-
-    assert(foos.emplace(uint16_t(9), uint8_t(10)));
-
-    assert(!foos.contains(Foo{1,2}));
-    assert(foos.contains(Foo{3,4}));
-    assert(foos.contains(Foo{5,6}));
-    assert(!foos.contains(Foo{7,8}));
-    assert(foos.contains(Foo{9,10}));
-
-    tiny::array_set<std::string, 4> strings;
     const std::string bar{"bar                                                                      !"};
-    strings.emplace("foo");
-    strings.emplace(bar);
-    strings.erase(bar);
-    strings.emplace("baz");
-
-    for (auto it = strings.begin(); it != strings.end(); ++it)
-    {
-        std::cerr << *it << std::endl;
-    }
-
-    const auto& sr = strings;
-    for (const auto& s : sr)
-    {
-        std::cerr << s << std::endl;
-    }
 
     tiny::set<Foo> tfoos;
     assert(0 == tfoos.size());
