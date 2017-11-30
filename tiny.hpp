@@ -116,10 +116,7 @@ struct set
     {
         if (is_tiny())
         {
-            for (int i = 0; i != m_size; ++i)
-            {
-                m_data.tiny[i].~T();
-            }
+            clean_tiny();
         }
         else
         {
@@ -158,10 +155,7 @@ struct set
         {
             if (is_tiny())
             {
-                for (int i = 0; i != m_size; ++i)
-                {
-                    m_data.tiny[i].~T();
-                }
+                clean_tiny();
             }
             new (&m_data.full) std::unique_ptr<std::set<T>>(
                 std::move(other.m_data.full));
@@ -188,10 +182,7 @@ struct set
         {
             if (is_tiny())
             {
-                for (int i = 0; i != m_size; ++i)
-                {
-                    m_data.tiny[i].~T();
-                }
+                clean_tiny();
             }
             new (&m_data.full) std::unique_ptr<std::set<T>>(
                 new std::set<T>(*other.m_data.full.get()));
@@ -238,10 +229,8 @@ struct set
                 set->insert(&m_data.tiny[0], &m_data.tiny[S]);
                 const auto ret = set->emplace(std::move(tmp)).second;
 
-                for (int i = 0; i != S; ++i)
-                {
-                    m_data.tiny[i].~T();
-                }
+                clean_tiny();
+
                 new (&m_data.full) std::unique_ptr<std::set<T>>();
                 m_data.full = std::move(set);
 
@@ -273,10 +262,7 @@ struct set
     {
         if (is_tiny())
         {
-            for (int i = 0; i != m_size; ++i)
-            {
-                m_data.tiny[i].~T();
-            }
+            clean_tiny();
             m_size = 0;
             return;
         }
@@ -298,6 +284,15 @@ struct set
         return m_size != -1;
     }
 private:
+
+    void clean_tiny()
+    {
+        assert(is_tiny());
+        for (int i = 0; i != m_size; ++i)
+        {
+            m_data.tiny[i].~T();
+        }
+    }
 
     union Data 
     {
