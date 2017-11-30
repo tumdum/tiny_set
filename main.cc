@@ -177,6 +177,26 @@ int main()
     test.clear();
     auto copy2 = test;
 
+    tiny::set<std::string> tiny1;
+    tiny1.emplace(bar);
+    tiny1.emplace("foo"); 
+    tiny::set<std::string> tiny2 = tiny1;
+
+    assert(tiny1.is_tiny());
+
+    tiny::set<std::string> big;
+    big.emplace(bar);
+    big.emplace("1");
+    big.emplace("2");
+    big.emplace("3");
+    big.emplace("4");
+    tiny::set<std::string> big2 = big;
+    assert(!big.is_tiny());
+
+    tiny1 = big;
+    big2 = tiny2;
+
+
     for (int a = 0; a != 1000; ++a)
     {
         for (int i = 0; i != 100; ++i)

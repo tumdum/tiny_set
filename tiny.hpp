@@ -129,12 +129,14 @@ struct set
 
     set(const set<T,C,A>& other)
         : m_data{T{}}
+        , m_size{0}
     {
         *this = other;
     }
 
     set(set<T,C,A>&& other)
         : m_data{T{}}
+        , m_size{0}
     {
         *this = std::move(other);
     }
@@ -159,19 +161,30 @@ struct set
 
     set<T,C,A>& operator=(const set<T,C,A>& other)
     {
-        m_size = other.m_size;
         if (other.is_tiny())
         {
-            for (int i = 0; i != m_size; ++i)
+            if (!is_tiny())
             {
-                m_data.tiny[i] = other.m_data.tiny[i];
+                m_data.full.reset();
+            }
+            for (int i = 0; i != other.m_size; ++i)
+            {
+                new (&m_data.tiny[i]) std::string(other.m_data.tiny[i]);
             }
         }
         else
         {
+            if (is_tiny())
+            {
+                for (int i = 0; i != m_size; ++i)
+                {
+                    m_data.tiny[i].~T();
+                }
+            }
             new (&m_data.full) std::unique_ptr<std::set<T>>(
                 new std::set<T>(*other.m_data.full.get()));
         }
+        m_size = other.m_size;
         return *this;
     }
 
