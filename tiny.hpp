@@ -143,19 +143,31 @@ struct set
 
     set<T,C,A>& operator=(set<T,C,A>&& other)
     {
-        m_size = other.m_size;
         if (other.is_tiny())
         {
+            if (!is_tiny())
+            {
+                m_data.full.reset();
+            }
             for (int i = 0; i != other.m_size; ++i)
             {
-                m_data.tiny[i] = std::move(other.m_data.tiny[i]);
+                new (&m_data.tiny[i]) std::string(std::move(other.m_data.tiny[i]));
             }
         }
         else
         {
+            if (is_tiny())
+            {
+                for (int i = 0; i != m_size; ++i)
+                {
+                    m_data.tiny[i].~T();
+                }
+            }
             new (&m_data.full) std::unique_ptr<std::set<T>>(
                 std::move(other.m_data.full));
         }
+
+        m_size = other.m_size;
         return *this;
     }
 

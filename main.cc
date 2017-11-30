@@ -180,9 +180,12 @@ int main()
     tiny::set<std::string> tiny1;
     tiny1.emplace(bar);
     tiny1.emplace("foo"); 
-    tiny::set<std::string> tiny2 = tiny1;
-
     assert(tiny1.is_tiny());
+
+    tiny::set<std::string> tiny2 = tiny1;
+    tiny::set<std::string> tiny3 = tiny1;
+    tiny::set<std::string> tiny4 = tiny1;
+
 
     tiny::set<std::string> big;
     big.emplace(bar);
@@ -190,12 +193,17 @@ int main()
     big.emplace("2");
     big.emplace("3");
     big.emplace("4");
-    tiny::set<std::string> big2 = big;
     assert(!big.is_tiny());
+
+    tiny::set<std::string> big2 = big;
+    tiny::set<std::string> big3 = big;
+    tiny::set<std::string> big4 = big;
 
     tiny1 = big;
     big2 = tiny2;
 
+    tiny3 = std::move(big3);
+    big4 = std::move(tiny4);
 
     for (int a = 0; a != 1000; ++a)
     {
