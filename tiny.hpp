@@ -2,6 +2,9 @@
 #include <memory>
 #include <cassert>
 
+#include <boost/variant.hpp>
+#include <boost/iterator/iterator_facade.hpp>
+
 namespace tiny
 {
 
@@ -84,6 +87,51 @@ private:
 };
 
 template <typename T>
+struct const_iterator : boost::iterator_facade<
+                  const_iterator<T>, const T, boost::forward_traversal_tag>
+{
+    using setIt = typename std::set<T>::const_iterator;
+
+    const_iterator(const T* it) : pointer(it) {}
+    const_iterator(setIt it) : iterator(it) {}
+
+    template <typename U>
+    bool equal(const const_iterator<U>& other) const
+    {
+        if (pointer != nullptr)
+        {
+            return pointer == other.pointer;
+        }
+        return iterator == other.iterator;
+    }
+
+    void increment()
+    {
+        if (pointer != nullptr)
+        {
+            pointer++;
+        }
+        else
+        {
+            iterator++;
+        }
+    }
+
+    const T& dereference() const
+    {
+        if (pointer != nullptr)
+        {
+            return *pointer;
+        }
+        return *iterator;
+    }
+
+private:
+    const T* pointer = nullptr;
+    setIt iterator;
+};
+
+template <typename T>
 struct set
 {
     static constexpr const int S = 4; // (sizeof(std::set<T>)/sizeof(T))/2;
@@ -104,6 +152,42 @@ struct set
             return;
         }
         m_data.full.reset();
+    }
+
+    set(const set<T>& other)
+        : m_data{std::array<T, S>{}}
+        , m_size(other.m_size)
+    {
+        if (other.isTiny())
+        {
+            for (int i = 0; i != m_size; ++i)
+            {
+                m_data.tiny[i] = other.m_data.tiny[i];
+            }
+        }
+        else
+        {
+            new (&m_data.full) std::unique_ptr<std::set<T>>(
+                new std::set<T>(*other.m_data.full.get()));
+        }
+    }
+
+    const_iterator<T> begin() const
+    {
+        if (isTiny())
+        {
+            return const_iterator<T>(&m_data.tiny[0]);
+        }
+        return const_iterator<T>(m_data.full->cbegin());
+    }
+
+    const_iterator<T> end() const
+    {
+        if (isTiny())
+        {
+            return const_iterator<T>(&m_data.tiny[m_size]);
+        }
+        return const_iterator<T>(m_data.full->cend());
     }
 
     size_t size() const
@@ -152,6 +236,20 @@ struct set
             return;
         }
         m_data.full->erase(element);
+    }
+
+    void clear()
+    {
+        if (isTiny())
+        {
+            for (int i = 0; i != m_size; ++i)
+            {
+                m_data.tiny[i].~T();
+            }
+            m_size = 0;
+            return;
+        }
+        m_data.full->clear();
     }
 
     std::set<T> to_std_set() const
