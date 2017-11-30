@@ -100,8 +100,10 @@ struct const_iterator : boost::iterator_facade<
     {
         if (pointer != nullptr)
         {
+            assert(other.pointer != nullptr);
             return pointer == other.pointer;
         }
+        assert(other.pointer == nullptr);
         return iterator == other.iterator;
     }
 
@@ -143,22 +145,53 @@ struct set
 
     ~set()
     {
-        if (isTiny())
+        if (is_tiny())
         {
             for (int i = 0; i != m_size; ++i)
             {
                 m_data.tiny[i].~T();
             }
-            return;
         }
-        m_data.full.reset();
+        else
+        {
+            m_data.full.reset();
+        }
     }
 
     set(const set<T>& other)
         : m_data{std::array<T, S>{}}
-        , m_size(other.m_size)
     {
-        if (other.isTiny())
+        *this = other;
+    }
+
+    set(set<T>&& other)
+        : m_data{std::array<T, S>{}}
+    {
+        *this = std::move(other);
+    }
+
+    set<T>& operator=(set<T>&& other)
+    {
+        m_size = other.m_size;
+        if (other.is_tiny())
+        {
+            for (int i = 0; i != other.m_size; ++i)
+            {
+                m_data.tiny[i] = std::move(other.m_data.tiny[i]);
+            }
+        }
+        else
+        {
+            new (&m_data.full) std::unique_ptr<std::set<T>>(
+                std::move(other.m_data.full));
+        }
+        return *this;
+    }
+
+    set<T>& operator=(const set<T>& other)
+    {
+        m_size = other.m_size;
+        if (other.is_tiny())
         {
             for (int i = 0; i != m_size; ++i)
             {
@@ -170,11 +203,12 @@ struct set
             new (&m_data.full) std::unique_ptr<std::set<T>>(
                 new std::set<T>(*other.m_data.full.get()));
         }
+        return *this;
     }
 
     const_iterator<T> begin() const
     {
-        if (isTiny())
+        if (is_tiny())
         {
             return const_iterator<T>(&m_data.tiny[0]);
         }
@@ -183,7 +217,7 @@ struct set
 
     const_iterator<T> end() const
     {
-        if (isTiny())
+        if (is_tiny())
         {
             return const_iterator<T>(&m_data.tiny[m_size]);
         }
@@ -192,14 +226,14 @@ struct set
 
     size_t size() const
     {
-        if (isTiny()) { return m_size; }
+        if (is_tiny()) { return m_size; }
         return m_data.full->size();
     }
 
     template <typename... Args>
     bool emplace(Args&&... args)
     {
-        if (isTiny())
+        if (is_tiny())
         {
             if (m_size == S)
             {
@@ -224,13 +258,13 @@ struct set
 
     bool contains(const T& needle) const
     {
-        if (isTiny()) { return tiny::contains<T, S>(m_data.tiny, m_size, needle); }
+        if (is_tiny()) { return tiny::contains<T, S>(m_data.tiny, m_size, needle); }
         return m_data.full->find(needle) != m_data.full->end();
     }
 
     void erase(const T& element)
     {
-        if (isTiny())
+        if (is_tiny())
         {
             tiny::erase<T, S, decltype(m_size)>(m_data.tiny, m_size, element);
             return;
@@ -240,7 +274,7 @@ struct set
 
     void clear()
     {
-        if (isTiny())
+        if (is_tiny())
         {
             for (int i = 0; i != m_size; ++i)
             {
@@ -254,22 +288,20 @@ struct set
 
     std::set<T> to_std_set() const
     {
-        if (isTiny())
+        if (is_tiny())
         {
             std::set<T> ret;
-            for (int i = 0; i != m_size; ++i)
-            {
-                ret.insert(m_data.tiny[i]);
-            }
+            ret.insert(begin(), end());
             return ret;
         }
         return *m_data.full;
     }
-private:
-    bool isTiny() const
+
+    bool is_tiny() const
     {
         return m_size != -1;
     }
+private:
 
     union Data 
     {

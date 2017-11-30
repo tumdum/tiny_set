@@ -34,6 +34,11 @@ void random_same_op(std::set<std::string>& a, tiny::set<std::string>& b)
 {
     assert(a.size() == b.size());
     assert(a == b.to_std_set());
+    tiny::set<std::string> tmp{std::move(b)};
+    assert(a == tmp.to_std_set());
+    b = std::move(tmp);
+    assert(a == b.to_std_set());
+
     switch (rand() % 4)
     {
         case 0:
@@ -190,6 +195,10 @@ int main()
     assert(tstrings.emplace("2"));
     assert(tstrings.emplace("3"));
     assert(!tstrings.emplace("3"));
+    assert(tstrings.is_tiny());
+    tiny::set<std::string> clean2;
+    clean2 = tstrings;
+    assert(tstrings.to_std_set() == clean2.to_std_set());
     assert(tstrings.emplace("4"));
     assert(!tstrings.emplace("4"));
 
@@ -198,19 +207,33 @@ int main()
     assert(tstrings.contains("2"));
     assert(tstrings.contains("3"));
     assert(tstrings.contains("4"));
+    assert(tstrings.size() == 5);
+    assert(!tstrings.is_tiny());
+    tiny::set<std::string> xyz{std::move(tstrings)};
+    assert(!xyz.is_tiny());
+    tstrings = std::move(xyz);
+    assert(tstrings.size() == 5);
 
     tstrings.erase("3");
     assert(!tstrings.contains("3"));
 
-    auto copy = tstrings;
+    tiny::set<std::string> copy = tstrings;
     assert(copy.to_std_set() == tstrings.to_std_set());
+    tiny::set<std::string> clean;
+    clean = tstrings;
+    assert(clean.to_std_set() == tstrings.to_std_set());
+    for (const auto& s : clean)
+    {
+        std::cout << "ssss: " << s << std::endl;
+    }
+    assert(tstrings.size() == 4);
     
     
     tiny::set<std::string> test;
     test.clear();
     auto copy2 = test;
 
-    for (int a = 0; a != 10000; ++a)
+    for (int a = 0; a != 1000; ++a)
     {
         for (int i = 0; i != 100; ++i)
         {
