@@ -8,7 +8,7 @@ namespace tiny
 {
 
 template <typename T, int S, typename TSize, typename... Args>
-bool emplace(std::array<T, S>& data, TSize& size, Args&&... args)
+bool emplace(T (&data)[S], TSize& size, Args&&... args)
 {
     assert(S > size);
     new (&data[size]) T{std::forward<Args>(args)...};
@@ -25,7 +25,7 @@ bool emplace(std::array<T, S>& data, TSize& size, Args&&... args)
 }
 
 template <typename T, int S>
-bool contains(const std::array<T, S>& data, uint8_t size, const T& needle)
+bool contains(const T (&data)[S], uint8_t size, const T& needle)
 {
     for (int i = 0; i != size; ++i)
     {
@@ -35,7 +35,7 @@ bool contains(const std::array<T, S>& data, uint8_t size, const T& needle)
 }
 
 template <typename T, int S, typename TSize>
-void erase(std::array<T, S>& data, TSize& size, const T& element)
+void erase(T (&data)[S], TSize& size, const T& element)
 {
     for (int i = 0; i != size; ++i)
     {
@@ -107,7 +107,7 @@ template <
 struct set
 {
     set()
-        : m_data{std::array<T, S>{}}
+        : m_data{T{}}
         , m_size(0)
     {
     }
@@ -128,13 +128,13 @@ struct set
     }
 
     set(const set<T,C,A>& other)
-        : m_data{std::array<T, S>{}}
+        : m_data{T{}}
     {
         *this = other;
     }
 
     set(set<T,C,A>&& other)
-        : m_data{std::array<T, S>{}}
+        : m_data{T{}}
     {
         *this = std::move(other);
     }
@@ -210,10 +210,13 @@ struct set
                 if (contains(tmp)) { return false; }
 
                 auto set = std::unique_ptr<std::set<T>>(new std::set<T>);
-                set->insert(m_data.tiny.begin(), m_data.tiny.end());
+                set->insert(&m_data.tiny[0], &m_data.tiny[S]);
                 const auto ret = set->emplace(std::move(tmp)).second;
 
-                m_data.tiny.std::array<T, S>::~array();
+                for (int i = 0; i != S; ++i)
+                {
+                    m_data.tiny[i].~T();
+                }
                 new (&m_data.full) std::unique_ptr<std::set<T>>();
                 m_data.full = std::move(set);
 
@@ -259,8 +262,7 @@ struct set
     {
         if (is_tiny())
         {
-            std::set<T,C,A> ret;
-            ret.insert(begin(), end());
+            std::set<T,C,A> ret{begin(), end()};
             return ret;
         }
         return *m_data.full;
@@ -274,7 +276,7 @@ private:
 
     union Data 
     {
-        std::array<T, S> tiny;
+        T tiny[S];
         std::unique_ptr<std::set<T,C,A>> full;
         ~Data() {}
     };
@@ -282,6 +284,6 @@ private:
     int8_t m_size; // >= 0 when tiny, -1 when full 
 };
 
-static_assert(sizeof(set<uint32_t>) < sizeof(std::set<uint32_t>), "");
+static_assert(sizeof(set<uint32_t,std::less<uint32_t>, std::allocator<uint32_t>, 4>) < sizeof(std::set<uint32_t>), "");
 
 }
