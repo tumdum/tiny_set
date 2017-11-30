@@ -34,7 +34,7 @@ void random_same_op(std::set<std::string>& a, tiny::set<std::string>& b)
 {
     assert(a.size() == b.size());
     assert(a == b.to_std_set());
-    switch (rand() % 3)
+    switch (rand() % 4)
     {
         case 0:
             {
@@ -54,9 +54,18 @@ void random_same_op(std::set<std::string>& a, tiny::set<std::string>& b)
                 a.erase(element);
                 b.erase(element);
             }
+        case 4:
+            {
+                a.clear();
+                b.clear();
+                assert(a == b.to_std_set());
+            }
     }
     assert(a.size() == b.size());
     assert(a == b.to_std_set());
+
+    auto copy = b;
+    assert(a == copy.to_std_set());
 }
 
 int main()
@@ -106,7 +115,7 @@ int main()
     assert(foos.contains(Foo{9,10}));
 
     tiny::array_set<std::string, 4> strings;
-    const std::string bar{"bar                                                                      "};
+    const std::string bar{"bar                                                                      !"};
     strings.emplace("foo");
     strings.emplace(bar);
     strings.erase(bar);
@@ -146,6 +155,15 @@ int main()
     assert(tstrings.emplace("3"));
     assert(!tstrings.emplace("3"));
 
+    const auto& r = tstrings;
+    r.begin();
+    r.end();
+
+    for (const auto& s : tstrings)
+    {
+        std::cout << "s: " << s << std::endl;
+    }
+
     assert(tstrings.contains(bar));
     assert(tstrings.contains("1"));
     assert(tstrings.contains("2"));
@@ -183,14 +201,22 @@ int main()
 
     tstrings.erase("3");
     assert(!tstrings.contains("3"));
+
+    auto copy = tstrings;
+    assert(copy.to_std_set() == tstrings.to_std_set());
     
-    for (int a = 0; a != 1000; ++a)
+    
+    tiny::set<std::string> test;
+    test.clear();
+    auto copy2 = test;
+
+    for (int a = 0; a != 10000; ++a)
     {
         for (int i = 0; i != 100; ++i)
         {
-            std::set<std::string> a;
-            tiny::set<std::string> b;
-            random_same_op(a, b);
+            std::set<std::string> x;
+            tiny::set<std::string> y;
+            random_same_op(x, y);
         }
     }
 
