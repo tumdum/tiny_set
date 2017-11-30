@@ -76,7 +76,6 @@ void random_same_op(std::set<std::string>& a, tiny::set<std::string>& b)
 int main()
 {
 #if not defined(BENCHMARK_TINY) and not defined(BENCHMARK_STD)
-    std::cerr << "tiny size: " << tiny::set<Foo>::S << std::endl;
     std::cerr << sizeof(Foo) << std::endl;
     std::cerr << "tiny sizeof: " << sizeof(tiny::set<Foo>) << std::endl;
 

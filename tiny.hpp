@@ -2,7 +2,6 @@
 #include <memory>
 #include <cassert>
 
-#include <boost/variant.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 
 namespace tiny
@@ -50,17 +49,20 @@ void erase(std::array<T, S>& data, TSize& size, const T& element)
     }
 }
 
-template <typename T>
+template <
+    typename T,
+    typename C = std::less<T>,
+    typename A = std::allocator<T>>
 struct const_iterator : boost::iterator_facade<
-                  const_iterator<T>, const T, boost::forward_traversal_tag>
+                  const_iterator<T,C,A>, const T, boost::forward_traversal_tag>
 {
-    using setIt = typename std::set<T>::const_iterator;
+    using setIt = typename std::set<T,C,A>::const_iterator;
 
     const_iterator(const T* it) : pointer(it) {}
     const_iterator(setIt it) : iterator(it) {}
 
     template <typename U>
-    bool equal(const const_iterator<U>& other) const
+    bool equal(const const_iterator<U,C,A>& other) const
     {
         if (pointer != nullptr)
         {
@@ -97,10 +99,13 @@ private:
     setIt iterator;
 };
 
-template <typename T>
+template <
+    typename T,
+    typename C = std::less<T>,
+    typename A = std::allocator<T>,
+    int S = 4>
 struct set
 {
-    static constexpr const int S = 4; // (sizeof(std::set<T>)/sizeof(T))/2;
     set()
         : m_data{std::array<T, S>{}}
         , m_size(0)
@@ -122,19 +127,19 @@ struct set
         }
     }
 
-    set(const set<T>& other)
+    set(const set<T,C,A>& other)
         : m_data{std::array<T, S>{}}
     {
         *this = other;
     }
 
-    set(set<T>&& other)
+    set(set<T,C,A>&& other)
         : m_data{std::array<T, S>{}}
     {
         *this = std::move(other);
     }
 
-    set<T>& operator=(set<T>&& other)
+    set<T,C,A>& operator=(set<T,C,A>&& other)
     {
         m_size = other.m_size;
         if (other.is_tiny())
@@ -152,7 +157,7 @@ struct set
         return *this;
     }
 
-    set<T>& operator=(const set<T>& other)
+    set<T,C,A>& operator=(const set<T,C,A>& other)
     {
         m_size = other.m_size;
         if (other.is_tiny())
@@ -170,22 +175,22 @@ struct set
         return *this;
     }
 
-    const_iterator<T> begin() const
+    const_iterator<T,C,A> begin() const
     {
         if (is_tiny())
         {
-            return const_iterator<T>(&m_data.tiny[0]);
+            return const_iterator<T,C,A>(&m_data.tiny[0]);
         }
-        return const_iterator<T>(m_data.full->cbegin());
+        return const_iterator<T,C,A>(m_data.full->cbegin());
     }
 
-    const_iterator<T> end() const
+    const_iterator<T,C,A> end() const
     {
         if (is_tiny())
         {
-            return const_iterator<T>(&m_data.tiny[m_size]);
+            return const_iterator<T,C,A>(&m_data.tiny[m_size]);
         }
-        return const_iterator<T>(m_data.full->cend());
+        return const_iterator<T,C,A>(m_data.full->cend());
     }
 
     size_t size() const
@@ -250,11 +255,11 @@ struct set
         m_data.full->clear();
     }
 
-    std::set<T> to_std_set() const
+    std::set<T,C,A> to_std_set() const
     {
         if (is_tiny())
         {
-            std::set<T> ret;
+            std::set<T,C,A> ret;
             ret.insert(begin(), end());
             return ret;
         }
@@ -270,7 +275,7 @@ private:
     union Data 
     {
         std::array<T, S> tiny;
-        std::unique_ptr<std::set<T>> full;
+        std::unique_ptr<std::set<T,C,A>> full;
         ~Data() {}
     };
     Data m_data;
