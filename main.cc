@@ -205,6 +205,13 @@ int main()
     tiny3 = std::move(big3);
     big4 = std::move(tiny4);
 
+    using tiny6 = tiny::set<int, std::less<int>, std::allocator<int>, 6>;
+    tiny6 t1, t2;
+    t1 = t2;
+    t1 = std::move(t2);
+    tiny6 t3{t1};
+    tiny6 t4{std::move(t3)};
+
     for (int a = 0; a != 1000; ++a)
     {
         for (int i = 0; i != 100; ++i)

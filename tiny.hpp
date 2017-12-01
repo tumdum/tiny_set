@@ -106,6 +106,8 @@ template <
     int S = 4>
 struct set
 {
+    using Self = set<T,C,A,S>;
+
     set()
         : m_data{T{}}
         , m_size(0)
@@ -124,21 +126,21 @@ struct set
         }
     }
 
-    set(const set<T,C,A>& other)
+    set(const Self& other)
         : m_data{T{}}
         , m_size{0}
     {
         *this = other;
     }
 
-    set(set<T,C,A>&& other)
+    set(Self&& other)
         : m_data{T{}}
         , m_size{0}
     {
         *this = std::move(other);
     }
 
-    set<T,C,A>& operator=(set<T,C,A>&& other)
+    Self& operator=(Self&& other)
     {
         if (other.is_tiny())
         {
@@ -165,7 +167,7 @@ struct set
         return *this;
     }
 
-    set<T,C,A>& operator=(const set<T,C,A>& other)
+    Self& operator=(const Self& other)
     {
         if (other.is_tiny())
         {
