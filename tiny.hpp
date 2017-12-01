@@ -148,7 +148,7 @@ struct set
             }
             for (int i = 0; i != other.m_size; ++i)
             {
-                new (&m_data.tiny[i]) std::string(std::move(other.m_data.tiny[i]));
+                new (&m_data.tiny[i]) T(std::move(other.m_data.tiny[i]));
             }
         }
         else
@@ -175,7 +175,7 @@ struct set
             }
             for (int i = 0; i != other.m_size; ++i)
             {
-                new (&m_data.tiny[i]) std::string(other.m_data.tiny[i]);
+                new (&m_data.tiny[i]) T(other.m_data.tiny[i]);
             }
         }
         else
